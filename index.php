@@ -147,6 +147,7 @@
       </header>
       <div class="subscriptions" id="subscriptions">
         <?php
+          $sumCategory = array();
           foreach ($subscriptions as $subscription) {
             if ($subscription['inactive'] == 1 && isset($settings['hideDisabledSubscriptions']) && $settings['hideDisabledSubscriptions'] === 'true') {
               continue;
@@ -162,7 +163,8 @@
             $print[$id]['currency_code'] = $currencies[$subscription['currency_id']]['code'];
             $currencyId = $subscription['currency_id'];
             $print[$id]['next_payment'] = date('M d, Y', strtotime($subscription['next_payment']));
-            $paymentIconFolder = (strpos($payment_methods[$paymentMethodId]['icon'], 'images/uploads/icons/') !== false) ? "" : "images/uploads/logos/";
+            $print[$id]['last_date'] = ($subscription['last_date'] ? date('M d, Y', strtotime($subscription['last_date'])) : '');
+            $paymentIconFolder = (strpos($payment_methods[$paymentMethodId]['icon'], 'images/uploads/icons/') !== false ? "" : "images/uploads/logos/");
             $print[$id]['payment_method_icon'] = $paymentIconFolder . $payment_methods[$paymentMethodId]['icon'];
             $print[$id]['payment_method_name'] = $payment_methods[$paymentMethodId]['name'];
             $print[$id]['payment_method_id'] = $paymentMethodId;
@@ -180,10 +182,11 @@
             if (isset($settings['showMonthlyPrice']) && $settings['showMonthlyPrice'] === 'true') {
               $print[$id]['price'] = getPricePerMonth($cycle, $frequency, $print[$id]['price']);
             }
+            $sumCategory[$print[$id]['category_id']] = (isset($sumCategory[$print[$id]['category_id']]) ? $sumCategory[$print[$id]['category_id']] : 0) + $print[$id]['price'];
           }
 
           if (isset($print)) {
-            printSubscriptions($print, $sort, $categories, $members, $i18n, $colorTheme);
+            printSubscriptions($print, $sort, $categories, $members, $i18n, $colorTheme, $sumCategory);
           }
           $db->close();
 
@@ -275,6 +278,11 @@
                 <input type="date" id="next_payment" name="next_payment" required>
               </div>
             </div>
+          </div>
+
+          <div class="form-group-inline">
+            <label for="last_date"><?= translate('last_date', $i18n) ?></label>
+            <input type="date" id="last_date" name="last_date">
           </div>
 
           <div class="form-group-inline">

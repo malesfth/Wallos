@@ -56,7 +56,39 @@
         }
     }
 
-    function printSubscriptions($subscriptions, $sort, $categories, $members, $i18n, $colorTheme) {
+    function relativeTimeAgo($dt) {
+        $time_difference = time() - strtotime($dt);
+
+        if( $time_difference < 1 ) { return 'less than 1 second ago'; }
+        $condition = array( 12 * 30 * 24 * 60 * 60 =>  'year',
+                    30 * 24 * 60 * 60       =>  'month',
+                    24 * 60 * 60            =>  'day',
+                    60 * 60                 =>  'hour',
+                    60                      =>  'minute',
+                    1                       =>  'second'
+        );
+    
+        foreach( $condition as $secs => $str )
+        {
+            $d = $time_difference / $secs;
+    
+            if( $d >= 1 )
+            {
+                $t = round( $d );
+                return 'about ' . $t . ' ' . $str . ( $t > 1 ? 's' : '' ) . ' ago';
+            }
+        }
+    }
+
+    function calculateEndDate($dt) {
+        $now = new DateTime();
+        $dt = new DateTime($dt);
+
+        $intv = $now->diff($dt);
+        return $intv->days+1;
+    }
+
+    function printSubscriptions($subscriptions, $sort, $categories, $members, $i18n, $colorTheme, $sumCategories) {
         if ($sort === "price") {
             usort($subscriptions, function($a, $b) {
                 return $a['price'] < $b['price'] ? 1 : -1;
@@ -74,7 +106,7 @@
                             if ($subscription['category_id'] == 1) {
                                 echo translate('no_category', $i18n);
                             } else {
-                                echo $categories[$subscription['category_id']]['name'];
+                                echo $categories[$subscription['category_id']]['name'] .' ( '. $sumCategories[$subscription['category_id']] . '€ )';
                             }
                         ?>
                     </div>
@@ -116,8 +148,15 @@
                 </div>
                 <div class="subscription-secondary">
                     <span class="name"><img src="images/siteicons/<?= $colorTheme ?>/subscription.png" alt="<?= translate('subscription', $i18n) ?>" /><?= $subscription['name'] ?></span>
-                    <span class="payer_user" title="<?= translate('paid_by', $i18n) ?>"><img src="images/siteicons/<?= $colorTheme ?>/payment.png" alt="<?= translate('paid_by', $i18n) ?>" /><?= $members[$subscription['payer_user_id']]['name'] ?></span>
+                    <!--<span class="payer_user" title="<?= translate('paid_by', $i18n) ?>"><img src="images/siteicons/<?= $colorTheme ?>/payment.png" alt="<?= translate('paid_by', $i18n) ?>" /><?= $members[$subscription['payer_user_id']]['name'] ?></span>-->
                     <span class="category" title="<?= translate('category', $i18n) ?>" ><img src="images/siteicons/<?= $colorTheme ?>/category.png" alt="<?= translate('category', $i18n) ?>" /><?= $categories[$subscription['category_id']]['name'] ?></span>
+                    <?php
+                    if ($subscription['last_date'] != "") {
+                    ?>
+                        <span class="last_date"><?= translate('last_date_str', $i18n) ?> <?= calculateEndDate($subscription['last_date']) ?> <?= translate('dayly', $i18n) ?></span>
+                    <?php
+                    }
+                    ?>
                     <?php
                         if ($subscription['url'] != "") {
                             $url = $subscription['url'];

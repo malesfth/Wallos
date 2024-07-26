@@ -19,6 +19,7 @@
                 $subscriptionData['price'] = $row['price'];
                 $subscriptionData['currency_id'] = $row['currency_id'];
                 $subscriptionData['next_payment'] = $row['next_payment'];
+                $subscriptionData['last_date'] = $row['last_date'];
                 $subscriptionData['frequency'] = $row['frequency'];
                 $subscriptionData['cycle'] = $row['cycle'];
                 $subscriptionData['notes'] = htmlspecialchars_decode($row['notes'] ?? "");

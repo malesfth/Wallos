@@ -29,7 +29,7 @@ if (isset($_SESSION['loggedin']) && $_SESSION['loggedin'] === true) {
     }
 
     foreach ($payments as $payment) {
-        $paymentIconFolder = (strpos($payment['icon'], 'images/uploads/icons/') !== false) ? "" : "images/uploads/logos/";
+        $paymentIconFolder = (strpos($payment['icon'], 'images/uploads/icons/') !== false ? "" : "images/uploads/logos/");
         $inUse = in_array($payment['id'], $paymentsInUse);
         ?>
             <div class="payments-payment"

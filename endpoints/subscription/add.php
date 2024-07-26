@@ -156,6 +156,7 @@
             $frequency = $_POST["frequency"];
             $cycle = $_POST["cycle"];
             $nextPayment = $_POST["next_payment"];
+            $lastDate = (isset($_POST["last_date"]) ? $_POST["last_date"] : null);
             $paymentMethodId = $_POST["payment_method_id"];
             $payerUserId = $_POST["payer_user_id"];
             $categoryId = $_POST['category_id'];
@@ -181,19 +182,19 @@
             }
 
             if (!$isEdit) {
-                $sql = "INSERT INTO subscriptions (name, logo, price, currency_id, next_payment, cycle, frequency, notes, 
+                $sql = "INSERT INTO subscriptions (name, logo, price, currency_id, next_payment, last_date, cycle, frequency, notes, 
                         payment_method_id, payer_user_id, category_id, notify, inactive, url, notify_days_before, user_id) 
-                        VALUES (:name, :logo, :price, :currencyId, :nextPayment, :cycle, :frequency, :notes, 
+                        VALUES (:name, :logo, :price, :currencyId, :nextPayment, :lastDate, :cycle, :frequency, :notes, 
                         :paymentMethodId, :payerUserId, :categoryId, :notify, :inactive, :url, :notifyDaysBefore, :userId)";
             } else {
                 $id = $_POST['id'];
                 if ($logo != "") {
                     $sql = "UPDATE subscriptions SET name = :name, logo = :logo, price = :price, currency_id = :currencyId,
-                     next_payment = :nextPayment, cycle = :cycle, frequency = :frequency, notes = :notes, payment_method_id = :paymentMethodId,
+                     next_payment = :nextPayment, last_date = :lastDate, cycle = :cycle, frequency = :frequency, notes = :notes, payment_method_id = :paymentMethodId,
                      payer_user_id = :payerUserId, category_id = :categoryId, notify = :notify, inactive = :inactive, 
                      url = :url, notify_days_before = :notifyDaysBefore WHERE id = :id AND user_id = :userId";
                 } else {
-                    $sql = "UPDATE subscriptions SET name = :name, price = :price, currency_id = :currencyId, next_payment = :nextPayment,
+                    $sql = "UPDATE subscriptions SET name = :name, price = :price, currency_id = :currencyId, next_payment = :nextPayment, last_date = :lastDate,
                     cycle = :cycle, frequency = :frequency, notes = :notes, payment_method_id = :paymentMethodId, payer_user_id = :payerUserId,
                     category_id = :categoryId, notify = :notify, inactive = :inactive, url = :url,notify_days_before = :notifyDaysBefore
                      WHERE id = :id AND user_id = :userId";
@@ -211,6 +212,7 @@
             $stmt->bindParam(':price', $price, SQLITE3_FLOAT);
             $stmt->bindParam(':currencyId', $currencyId, SQLITE3_INTEGER);
             $stmt->bindParam(':nextPayment', $nextPayment, SQLITE3_TEXT);
+            $stmt->bindParam(':lastDate', $lastDate, SQLITE3_TEXT);
             $stmt->bindParam(':cycle', $cycle, SQLITE3_INTEGER);
             $stmt->bindParam(':frequency', $frequency, SQLITE3_INTEGER);
             $stmt->bindParam(':notes', $notes, SQLITE3_TEXT);

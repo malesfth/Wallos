@@ -69,6 +69,35 @@ function deleteAvatar(path) {
   });
 }
 
+function saveArchiveafterdays() {
+  const button = document.getElementById("saveArchiveafterdays");
+  button.disabled = true;
+
+  const days = document.getElementById("archiveafterdays").value;
+
+  fetch('endpoints/user/archive.php', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ days: days })
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.success) {
+      showSuccessMessage(data.message);
+    } else {
+      showErrorMessage(data.message);
+    }
+    button.disabled = false;
+  })
+  .catch(error => {
+    showErrorMessage(translate('unknown_error'));
+    button.disabled = false;
+  });
+
+}
+
 function saveBudget() {
   const button = document.getElementById("saveBudget");
   button.disabled = true;
@@ -327,7 +356,7 @@ function removeCategory(categoryId) {
     });
 }
 
-function editCategory(categoryId) {
+function editCategory(categoryId, setasCategory) {
   var saveButton = document.querySelector(`div[data-categoryid="${categoryId}"] button[name="save"]`);
   var inputElement = document.querySelector(`div[data-categoryid="${categoryId}"] input[name="category"]`);
   
@@ -840,6 +869,28 @@ document.addEventListener('DOMContentLoaded', function() {
       });
 
 });
+
+function addApiKeyButton() {
+  document.getElementById("addApiKey").disabled = true;
+  fetch("endpoints/user/generate_token.php", {
+    method: "GET"
+  })
+  .then(response => response.json())
+  .then(data => {
+      if (data.success) {
+          showSuccessMessage(data.message);
+          document.getElementById("addApiKey").disabled = false;
+          document.getElementById("apiKey").value = data.data;
+      } else {
+          showErrorMessage(data.message);
+          document.getElementById("addApiKey").disabled = false;
+      }
+  })
+  .catch(error => {
+    showErrorMessage(error);
+    document.getElementById("addApiKey").disabled = false;
+  });
+}
 
 function addFixerKeyButton() {
   document.getElementById("addFixerKey").disabled = true;

@@ -1,40 +1,35 @@
 <?php
     require_once '../../includes/connect_endpoint.php';
 
+    header('Content-Type: application/json; charset=utf-8');
+
+    $token = null;
+    if (isset($_SERVER['REDIRECT_HTTP_AUTHORIZATION'])) {
+      $matches = array();
+      preg_match('/Bearer (.*)/', $_SERVER['REDIRECT_HTTP_AUTHORIZATION'], $matches);
+      if(isset($matches[1])){
+        $token = $matches[1];
+        $sql = "SELECT id, token FROM user WHERE token = :token";
+        $stmt = $db->prepare($sql);
+        $stmt->bindValue(':token', $token, SQLITE3_TEXT);
+        $result = $stmt->execute();
+        while ($row = $result->fetchArray(SQLITE3_ASSOC)) {
+            $userId = $row['id'];
+        }
+      }
+    }
+
     require_once '../../includes/currency_formatter.php';
     require_once '../../includes/getdbkeys.php';
 
+    require_once '../../includes/getsettings.php';
     include_once '../../includes/list_subscriptions.php';
 
-    require_once '../../includes/getsettings.php';
-
-    $theme = "light";
-    if (isset($settings['theme'])) {
-      $theme = $settings['theme'];
-    }
-
-    $colorTheme = "blue";
-    if (isset($settings['color_theme'])) {
-      $colorTheme = $settings['color_theme'];
-    }
-
-    if (isset($_SESSION['loggedin']) && $_SESSION['loggedin'] === true) {
+    if ((isset($_SESSION['loggedin']) && $_SESSION['loggedin'] === true) || $token!=null) {
         $sort = "next_payment";
         $order = "ASC";
-        $sql = "SELECT * FROM subscriptions ORDER BY next_payment ASC, inactive ASC";
-        if (isset($_COOKIE['sortOrder']) && $_COOKIE['sortOrder'] != "") {
-          $sort = $_COOKIE['sortOrder'];
-          $allowedSortCriteria = ['name', 'id', 'next_payment', 'price', 'payer_user_id', 'category_id', 'payment_method_id'];
-          if ($sort == "price" || $sort == "id") {
-            $order = "DESC";
-          }
-          if (!in_array($sort, $allowedSortCriteria)) {
-            $sort = "next_payment";
-          }
-        }
-
         $params = array();
-        $sql = "SELECT * FROM subscriptions WHERE user_id = :userId";
+        $sql = "SELECT * FROM ".(isset($_GET['archive']) ? 'subscriptions_archive' : 'subscriptions')." WHERE user_id = :userId";
 
         if (isset($_GET['category']) && $_GET['category'] != "") {
             $sql .= " AND category_id = :category";
@@ -69,7 +64,7 @@
         }
 
         $sumCategory = array();
-        $defaultLogo = $theme == "light" ? "images/siteicons/" . $colorTheme . "/wallos.png" : "images/siteicons/" . $colorTheme . "/walloswhite.png";
+        $defaultLogo = "images/siteicons/blue/wallos.png";
         foreach ($subscriptions as $subscription) {
           if ($subscription['inactive'] == 1 && isset($settings['hideDisabledSubscriptions']) && $settings['hideDisabledSubscriptions'] === 'true') {
             continue;
@@ -84,7 +79,7 @@
           $paymentMethodId = $subscription['payment_method_id'];
           $print[$id]['currency_code'] = $currencies[$subscription['currency_id']]['code'];
           $currencyId = $subscription['currency_id'];
-          $print[$id]['next_payment'] = date('M d, Y', strtotime($subscription['next_payment']));
+          $print[$id]['next_payment'] = $subscription['next_payment'];
           $print[$id]['last_date'] = ($subscription['last_date'] ? date('M d, Y', strtotime($subscription['last_date'])) : '');
           $paymentIconFolder = (strpos($payment_methods[$paymentMethodId]['icon'], 'images/uploads/icons/') !== false ? "" : "images/uploads/logos/");
           $print[$id]['payment_method_icon'] = $paymentIconFolder . $payment_methods[$paymentMethodId]['icon'];
@@ -109,24 +104,25 @@
           $sumCategory[$print[$id]['category_id']] = (isset($sumCategory[$print[$id]['category_id']]) ? $sumCategory[$print[$id]['category_id']] : 0) + $print[$id]['price'];
         }
 
+        foreach($categories as $category) {
+          $categories[$category["id"]]["sum"] = (isset($sumCategory[$category["id"]]) ? $sumCategory[$category["id"]] : 0);
+        }
+
         if (isset($print)) {
-          printSubscriptions($print, $sort, $categories, $members, $i18n, $colorTheme, $sumCategory);
+          $response = array(
+              "success" => true,
+              //"members" => $members,
+              "categories" => $categories,
+              "data" => $print,
+          );
+          die(json_encode($response, JSON_PRETTY_PRINT));
         }
-        
-        if (count($subscriptions) == 0) {
-            ?>
-              <div class="no-matching-subscriptions">
-                  <p>
-                    <?= translate('no_matching_subscriptions', $i18n) ?>
-                  </p>
-                  <button class="button" onClick="clearFilters()">
-                    <span clasS="fa-solid fa-minus-circle"></span>
-                    <?= translate('clear_filters', $i18n) ?>
-                  </button>
-                  <img src="images/siteimages/empty.png" alt="<?= translate('empty_page', $i18n) ?>" />
-              </div>
-            <?php
-        }
+    } else {
+      $response = array(
+        "success" => false,
+        "errorMessage" => translate('please_login', $i18n)
+      );
+      die(json_encode($response, JSON_PRETTY_PRINT));
     }
 
     $db->close();

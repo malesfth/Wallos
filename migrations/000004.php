@@ -7,6 +7,7 @@
 
     if ($columnRequired) {
         $db->exec('ALTER TABLE subscriptions ADD COLUMN url VARCHAR(255);');
+        $db->exec('ALTER TABLE subscriptions ADD COLUMN last_date DATE;');
     }
 
 ?>

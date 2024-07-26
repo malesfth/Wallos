@@ -51,4 +51,25 @@ $db->exec('CREATE TABLE IF NOT EXISTS password_resets (
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     email_sent BOOLEAN DEFAULT 0)');
 
+$db->exec('CREATE TABLE subscriptions_archive (
+        id INTEGER PRIMARY KEY,
+        name TEXT NOT NULL,
+        logo TEXT,
+        price REAL NOT NULL,
+        currency_id INTEGER,
+        next_payment DATE,
+        cycle INTEGER,
+        frequency INTEGER,
+        notes TEXT,
+        payment_method_id INTEGER,
+        payer_user_id INTEGER,
+        category_id INTEGER, notify BOOLEAN DEFAULT false, url VARCHAR(255), inactive BOOLEAN DEFAULT false, notify_days_before INTEGER DEFAULT 0, user_id INTEGER DEFAULT 1, last_date DATE,
+        FOREIGN KEY(currency_id) REFERENCES currencies(id),
+        FOREIGN KEY(cycle) REFERENCES cycles(id),
+        FOREIGN KEY(frequency) REFERENCES frequencies(id),
+        FOREIGN KEY(payment_method_id) REFERENCES payment_methods(id),
+        FOREIGN KEY(payer_user_id) REFERENCES user(id)
+        FOREIGN KEY(category_id) REFERENCES categories(id)
+    );');
+
 ?>

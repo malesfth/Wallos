@@ -1,5 +1,20 @@
 # Changelog
 
+
+## [2.21.0](https://github.com/ellite/Wallos/compare/v1.29.1...v2.0.0) (2024-07-04)
+
+
+### ⚠ BREAKING CHANGES
+
+* API (/endpoints/api/)
+* Archive subscriptions by enddate and set x days to move them to archives
+
+### Features
+
+* Enddate field added
+* If you order by categories (sum of category shown)
+* Set savings plan and lump sums category for stats
+
 ## [2.0.0](https://github.com/ellite/Wallos/compare/v1.29.1...v2.0.0) (2024-05-26)
 
 

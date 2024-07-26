@@ -26,7 +26,8 @@
 
   <?php
     if (isset($db)) {
-        $db->close();
+      $db->close();
+      unset($db);
     }
   ?>
 

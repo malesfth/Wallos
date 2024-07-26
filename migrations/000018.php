@@ -10,6 +10,8 @@ $columnRequired = $columnQuery->fetchArray(SQLITE3_ASSOC) === false;
 
 if ($columnRequired) {
     $db->exec('ALTER TABLE user ADD COLUMN budget INTEGER DEFAULT 0');
+    $db->exec('ALTER TABLE user ADD token TEXT');
+    $db->exec('ALTER TABLE settings ADD COLUMN archive_afterdays INTEGER DEFAULT 0');
 }
 
 ?>

@@ -33,7 +33,7 @@ $allMigrations = glob('migrations/*.php');
 if (count($allMigrations) == 0) {
     $allMigrations = glob('../../migrations/*.php');
 }
-
+$mig = $allMigrations;
 $allMigrations = array_map(function($migration) {
     return str_replace('../../', '', $migration);
 }, $allMigrations);
@@ -48,7 +48,7 @@ if (count($requiredMigrations) === 0) {
     echo "No migrations to run.\n";
 }
 
-foreach ($requiredMigrations as $migration) {
+foreach ($mig as $migration) {
     require_once $migration;
 
     $stmtInsert = $db->prepare('INSERT INTO migrations (migration) VALUES (:migration)');

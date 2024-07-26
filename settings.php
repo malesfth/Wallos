@@ -136,6 +136,23 @@
         </div>
     </section>
 
+    <section class="account-section">
+        <header>
+            <h2><?= translate('archive_afterdays', $i18n) ?></h2>
+        </header>
+        <div class="account-archiveafterdays">
+            <div class="form-group-inline">
+                <input type="number" id="archiveafterdays" name="archiveafterdays" value="<?= $settings['archive_afterdays'] ?>" placeholder="Tage">
+                <input type="submit" value="<?= translate('save', $i18n) ?>" id="saveArchiveafterdays" onClick="saveArchiveafterdays()"/>
+            </div>
+            <div class="settings-notes">
+                <p>
+                    <i class="fa-solid fa-circle-info"></i> <?= translate('archive_afterdays_info', $i18n) ?></p>
+                <p>
+            </div>
+        </div>
+    </section>
+
     <?php
         $sql = "SELECT * FROM household WHERE user_id = :userId";
         $stmt = $db->prepare($sql);
@@ -628,6 +645,12 @@
                         <button class="image-button medium"  onClick="editCategory(<?= $category['id'] ?>)" name="save">
                             <img src="images/siteicons/<?= $colorTheme ?>/save.png" title="<?= translate('save_category', $i18n) ?>">
                         </button>
+                        <button class="image-button medium"  onClick="editCategory(<?= $category['id'] ?>)" name="savingsplan">
+                            <img src="images/siteicons/<?= $colorTheme ?>/payment.png" title="<?= translate('save_category_savingsplan', $i18n) ?>">
+                        </button>
+                        <button class="image-button medium"  onClick="editCategory(<?= $category['id'] ?>)" name="lumpsums" disabled>
+                            <img src="images/siteicons/<?= $colorTheme ?>/category.png" title="<?= translate('save_category_lumpsums', $i18n) ?>">
+                        </button>
                         <?php
                             if ($canDelete) {
                             ?>
@@ -765,6 +788,37 @@
     </section>
 
     <?php
+        $token = "";
+        $sql = "SELECT token FROM user WHERE id = :userId";
+        $stmt = $db->prepare($sql);
+        $stmt->bindValue(':userId', $userId, SQLITE3_INTEGER);
+        $result = $stmt->execute();
+        if ($result) {
+            $row = $result->fetchArray(SQLITE3_ASSOC);
+            if ($row) {
+                $token = $row['token'];
+            }
+        }
+    ?>
+
+    <section class="account-section">
+        <header>
+            <h2>Wallos API Key</h2>
+        </header>
+        <div class="account-fixer">
+            <div class="form-group">
+                <input type="text" name="api-key" id="apiKey" value="<?= $token ?>" placeholder="<?= translate('api_key', $i18n) ?>">
+            </div>
+            <div class="settings-notes">
+                <p><i class="fa-solid fa-circle-info"></i><?= translate('apikey_info', $i18n) ?></p>
+            </div>
+            <div class="buttons">
+                <input type="submit" value="<?= translate('generate', $i18n) ?>" id="addApiKey" onClick="addApiKeyButton()" class="thin"/>
+            </div>
+        </div>
+    </section>
+
+    <?php
         $apiKey = "";
         $sql = "SELECT api_key, provider FROM fixer WHERE user_id = :userId";
         $stmt = $db->prepare($sql);
@@ -852,7 +906,7 @@
                 }
 
                 foreach ($payments as $payment) {
-                    $paymentIconFolder = (strpos($payment['icon'], 'images/uploads/icons/') !== false) ? "" : "images/uploads/logos/";
+                    $paymentIconFolder = (strpos($payment['icon'], 'images/uploads/icons/') !== false ? "" : "images/uploads/logos/");
 
                     $inUse = in_array($payment['id'], $paymentsInUse);
                     ?>
