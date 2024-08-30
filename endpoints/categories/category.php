@@ -113,6 +113,92 @@ if (isset($_SESSION['loggedin']) && $_SESSION['loggedin'] === true) {
             ];
             echo json_encode($response);
         }
+    } else if (isset($_GET['action']) && $_GET['action'] == "editsavings") {
+        if (isset($_GET['categoryId']) && $_GET['categoryId'] != "") {
+            $categoryId = $_GET['categoryId'];
+
+            $stmt = $db->prepare('SELECT is_saving FROM categories WHERE id = :categoryId AND user_id = :userId');
+            $stmt->bindParam(':categoryId', $categoryId, SQLITE3_INTEGER);
+            $stmt->bindParam(':userId', $userId, SQLITE3_INTEGER);
+            $result = $stmt->execute();
+            $row = $result->fetchArray(SQLITE3_ASSOC);
+            if ($row['is_saving']==1) {
+                $val = 0;
+            } else {
+                $val = 1;
+            }
+
+            $sql = "UPDATE categories SET is_saving = :val WHERE id = :categoryId AND user_id = :userId";
+            $stmt = $db->prepare($sql);
+            $stmt->bindParam(':val', $val, SQLITE3_INTEGER);
+            $stmt->bindParam(':categoryId', $categoryId, SQLITE3_INTEGER);
+            $stmt->bindParam(':userId', $userId, SQLITE3_INTEGER);
+            $result = $stmt->execute();
+
+            if ($result) {
+                $response = [
+                    "success" => true,
+                    "state" => $val,
+                    "message" => translate('category_saved', $i18n)
+                ];
+                echo json_encode($response);
+            } else {
+                $response = [
+                    "success" => false,
+                    "errorMessage" => translate('failed_edit_category', $i18n)
+                ];
+                echo json_encode($response);
+            }
+        } else {
+            $response = [
+                "success" => false,
+                "errorMessage" => translate('fill_all_fields', $i18n)
+            ];
+            echo json_encode($response);
+        }
+    }  else if (isset($_GET['action']) && $_GET['action'] == "editgeneral") {
+        if (isset($_GET['categoryId']) && $_GET['categoryId'] != "") {
+            $categoryId = $_GET['categoryId'];
+
+            $stmt = $db->prepare('SELECT is_general FROM categories WHERE id = :categoryId AND user_id = :userId');
+            $stmt->bindParam(':categoryId', $categoryId, SQLITE3_INTEGER);
+            $stmt->bindParam(':userId', $userId, SQLITE3_INTEGER);
+            $result = $stmt->execute();
+            $row = $result->fetchArray(SQLITE3_ASSOC);
+            if ($row['is_general']==1) {
+                $val = 0;
+            } else {
+                $val = 1;
+            }
+
+            $sql = "UPDATE categories SET is_general = :val WHERE id = :categoryId AND user_id = :userId";
+            $stmt = $db->prepare($sql);
+            $stmt->bindParam(':val', $val, SQLITE3_INTEGER);
+            $stmt->bindParam(':categoryId', $categoryId, SQLITE3_INTEGER);
+            $stmt->bindParam(':userId', $userId, SQLITE3_INTEGER);
+            $result = $stmt->execute();
+
+            if ($result) {
+                $response = [
+                    "success" => true,
+                    "state" => $val,
+                    "message" => translate('category_saved', $i18n)
+                ];
+                echo json_encode($response);
+            } else {
+                $response = [
+                    "success" => false,
+                    "errorMessage" => translate('failed_edit_category', $i18n)
+                ];
+                echo json_encode($response);
+            }
+        } else {
+            $response = [
+                "success" => false,
+                "errorMessage" => translate('fill_all_fields', $i18n)
+            ];
+            echo json_encode($response);
+        }
     } else {
         echo translate('error', $i18n);
     }

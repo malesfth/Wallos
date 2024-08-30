@@ -642,14 +642,14 @@
                     <div class="form-group-inline" data-categoryid="<?= $category['id'] ?>">
                         <div class="drag-icon"></div>
                         <input type="text" name="category" value="<?= $category['name'] ?>" placeholder="Category">
-                        <button class="image-button medium"  onClick="editCategory(<?= $category['id'] ?>)" name="save">
+                        <button class="image-button medium" onClick="editCategory(<?= $category['id'] ?>)" name="save">
                             <img src="images/siteicons/<?= $colorTheme ?>/save.png" title="<?= translate('save_category', $i18n) ?>">
                         </button>
-                        <button class="image-button medium"  onClick="editCategory(<?= $category['id'] ?>)" name="savingsplan">
+                        <button class="image-button medium<?= ($category['is_saving']==1 ? ' success' : '') ?>" onClick="editCategorySavings(<?= $category['id'] ?>)" name="savingscat">
                             <img src="images/siteicons/<?= $colorTheme ?>/payment.png" title="<?= translate('save_category_savingsplan', $i18n) ?>">
                         </button>
-                        <button class="image-button medium"  onClick="editCategory(<?= $category['id'] ?>)" name="lumpsums" disabled>
-                            <img src="images/siteicons/<?= $colorTheme ?>/category.png" title="<?= translate('save_category_lumpsums', $i18n) ?>">
+                        <button class="image-button medium<?= ($category['is_general']==1 ? ' success' : '') ?>" onClick="editCategoryGeneral(<?= $category['id'] ?>)" name="generalcat">
+                            <img src="images/siteicons/<?= $colorTheme ?>/category.png" title="<?= translate('save_category_general', $i18n) ?>">
                         </button>
                         <?php
                             if ($canDelete) {

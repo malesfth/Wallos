@@ -8,6 +8,8 @@
     if ($columnRequired) {
         $db->exec('ALTER TABLE categories ADD COLUMN `order` INTEGER DEFAULT 0');
         $db->exec('UPDATE categories SET `order` = id');
+        $db->exec('ALTER TABLE categories ADD COLUMN `is_saving` INTEGER DEFAULT (0)');
+        $db->exec('ALTER TABLE categories ADD COLUMN `is_general` INTEGER DEFAULT (0)');
     }
 
 

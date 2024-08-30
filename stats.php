@@ -98,8 +98,8 @@ $amountDueThisMonth = 0;
 $totalCostPerMonth = 0;
 $totalCostPerMonthPure = 0;
 $totalSavingsPerMonth = 0;
-$pauschal = 0;
-$sparplan = 0;
+$general = 0;
+$savings = 0;
 
 $statsSubtitleParts = [];
 $query = "SELECT name, price, logo, frequency, cycle, currency_id, next_payment, payer_user_id, category_id, payment_method_id, inactive FROM subscriptions";
@@ -176,11 +176,11 @@ if ($result) {
           $mostExpensiveSubscription['logo'] = $logo;
         }
 
-        if ($categoryId==5) {
-          $pauschal = $pauschal + $price;
+        if ($categories[$categoryId]['is_general']==1) { //if ($categoryId==5) {
+          $general = $general + $price;
         }
-        if ($categoryId==6) {
-          $sparplan = $sparplan + $price;
+        if ($categories[$categoryId]['is_saving']==1) { //if ($categoryId==6) {
+          $savings = $savings + $price;
         } 
 
         // Calculate ammount due this month
@@ -374,12 +374,12 @@ $numberOfElements = 6;
       <div class="title"><?= translate('amount_due', $i18n) ?></div>
     </div>
     <div class="statistic">
-        <span><?= CurrencyFormatter::format($sparplan, $code) ?></span>
-        <div class="title"><?= translate('sparplan', $i18n) ?></div>
+        <span><?= CurrencyFormatter::format($savings, $code) ?></span>
+        <div class="title"><?= translate('savings', $i18n) ?></div>
     </div>
     <div class="statistic">
-        <span><?= CurrencyFormatter::format($pauschal, $code) ?></span>
-        <div class="title"><?= translate('pauschal', $i18n) ?></div>
+        <span><?= CurrencyFormatter::format($general, $code) ?></span>
+        <div class="title"><?= translate('general', $i18n) ?></div>
     </div>
     <?php
       if (isset($budgetUsed)) {

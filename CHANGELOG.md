@@ -1,7 +1,7 @@
 # Changelog
 
 
-## [2.21.0](https://github.com/ellite/Wallos/compare/v1.29.1...v2.0.0) (2024-07-04)
+## [2.23.0](https://github.com/ellite/Wallos/compare/v1.29.1...v2.0.0) (2024-07-04)
 
 
 ### ⚠ BREAKING CHANGES
