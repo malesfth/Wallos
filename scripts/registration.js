@@ -5,7 +5,7 @@ function setCookie(name, value, days) {
         date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
         expires = "; expires=" + date.toUTCString();
     }
-    document.cookie = name + "=" + value + expires;
+    document.cookie = name + "=" + value + expires + "; SameSite=Strict";
 }
 
 function storeFormFieldValue(fieldId) {
@@ -157,8 +157,21 @@ function restoreDB() {
     .catch(error => showErrorMessage('Error:', error));
 }
 
+function checkThemeNeedsUpdate() {
+  if (window.update_theme_settings) {
+    const prefersDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    const themePreference = prefersDarkMode ? 'dark' : 'light';
+    const darkThemeCss = document.querySelector("#dark-theme");
+    darkThemeCss.disabled = themePreference === 'light';
+    document.body.className = themePreference;
+    const themeColorMetaTag = document.querySelector('meta[name="theme-color"]');
+    themeColorMetaTag.setAttribute('content', themePreference === 'dark' ? '#222222' : '#FFFFFF');
+  }
+}
+
 window.onload = function () {
     restoreFormFields();
     removeFromStorage();
     runDatabaseMigration();
+    checkThemeNeedsUpdate();
 };

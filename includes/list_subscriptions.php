@@ -1,196 +1,222 @@
 <?php
 
-    require_once 'i18n/getlang.php';
+require_once 'i18n/getlang.php';
 
-    function getBillingCycle($cycle, $frequency, $i18n) {
-        switch ($cycle) {
+function getBillingCycle($cycle, $frequency, $i18n)
+{
+    switch ($cycle) {
         case 1:
             return $frequency == 1 ? translate('Daily', $i18n) : $frequency . " " . translate('days', $i18n);
-            break;
         case 2:
             return $frequency == 1 ? translate('Weekly', $i18n) : $frequency . " " . translate('weeks', $i18n);
-            break;
         case 3:
             return $frequency == 1 ? translate('Monthly', $i18n) : $frequency . " " . translate('months', $i18n);
-            break;
         case 4:
             return $frequency == 1 ? translate('Yearly', $i18n) : $frequency . " " . translate('years', $i18n);
-            break;  
-        }
     }
+}
 
-    function getPricePerMonth($cycle, $frequency, $price) {
-        switch ($cycle) {
+function getPricePerMonth($cycle, $frequency, $price)
+{
+    switch ($cycle) {
         case 1:
-            $numberOfPaymentsPerMonth = (30 / $frequency); 
+            $numberOfPaymentsPerMonth = (30 / $frequency);
             return $price * $numberOfPaymentsPerMonth;
-            break;
         case 2:
             $numberOfPaymentsPerMonth = (4.35 / $frequency);
             return $price * $numberOfPaymentsPerMonth;
-            break;
         case 3:
             $numberOfPaymentsPerMonth = (1 / $frequency);
             return $price * $numberOfPaymentsPerMonth;
-            break;
         case 4:
             $numberOfMonths = (12 * $frequency);
             return $price / $numberOfMonths;
-            break;  
-        }
     }
+}
 
-    
-    function getPriceConverted($price, $currency, $database) {
-        $query = "SELECT rate FROM currencies WHERE id = :currency";
-        $stmt = $database->prepare($query);
-        $stmt->bindParam(':currency', $currency, SQLITE3_INTEGER);
-        $result = $stmt->execute();
-        
-        $exchangeRate = $result->fetchArray(SQLITE3_ASSOC);
-        if ($exchangeRate === false) {
-            return $price;
-        } else {
-            $fromRate = $exchangeRate['rate'];
-            return $price / $fromRate;
-        }
+
+function getPriceConverted($price, $currency, $database)
+{
+    $query = "SELECT rate FROM currencies WHERE id = :currency";
+    $stmt = $database->prepare($query);
+    $stmt->bindParam(':currency', $currency, SQLITE3_INTEGER);
+    $result = $stmt->execute();
+
+    $exchangeRate = $result->fetchArray(SQLITE3_ASSOC);
+    if ($exchangeRate === false) {
+        return $price;
+    } else {
+        $fromRate = $exchangeRate['rate'];
+        return $price / $fromRate;
     }
+}
 
-    function relativeTimeAgo($dt) {
-        $time_difference = time() - strtotime($dt);
+function relativeTimeAgo($dt) {
+    $time_difference = time() - strtotime($dt);
 
-        if( $time_difference < 1 ) { return 'less than 1 second ago'; }
-        $condition = array( 12 * 30 * 24 * 60 * 60 =>  'year',
-                    30 * 24 * 60 * 60       =>  'month',
-                    24 * 60 * 60            =>  'day',
-                    60 * 60                 =>  'hour',
-                    60                      =>  'minute',
-                    1                       =>  'second'
-        );
-    
-        foreach( $condition as $secs => $str )
+    if( $time_difference < 1 ) { return 'less than 1 second ago'; }
+    $condition = array( 12 * 30 * 24 * 60 * 60 =>  'year',
+                30 * 24 * 60 * 60       =>  'month',
+                24 * 60 * 60            =>  'day',
+                60 * 60                 =>  'hour',
+                60                      =>  'minute',
+                1                       =>  'second'
+    );
+
+    foreach( $condition as $secs => $str )
+    {
+        $d = $time_difference / $secs;
+
+        if( $d >= 1 )
         {
-            $d = $time_difference / $secs;
-    
-            if( $d >= 1 )
-            {
-                $t = round( $d );
-                return 'about ' . $t . ' ' . $str . ( $t > 1 ? 's' : '' ) . ' ago';
-            }
+            $t = round( $d );
+            return 'about ' . $t . ' ' . $str . ( $t > 1 ? 's' : '' ) . ' ago';
         }
     }
+}
 
-    function calculateEndDate($dt) {
-        $now = new DateTime();
-        $dt = new DateTime($dt);
+function calculateEndDate($dt) {
+    $now = new DateTime();
+    $dt = new DateTime($dt);
 
-        $intv = $now->diff($dt);
-        return $intv->days+1;
-    }
+    $intv = $now->diff($dt);
+    return $intv->days+1;
+}
 
-    function printSubscriptions($subscriptions, $sort, $categories, $members, $i18n, $colorTheme, $sumCategories) {
-        if ($sort === "price") {
-            usort($subscriptions, function($a, $b) {
-                return $a['price'] < $b['price'] ? 1 : -1;
+function printSubscriptions($subscriptions, $sort, $categories, $members, $i18n, $colorTheme, $imagePath, $disabledToBottom)
+{
+    if ($sort === "price") {
+        usort($subscriptions, function ($a, $b) {
+            return $a['price'] < $b['price'] ? 1 : -1;
+        });
+        if ($disabledToBottom === 'true') {
+            usort($subscriptions, function ($a, $b) {
+                return $a['inactive'] - $b['inactive'];
             });
         }
-
-        $currentCategory = 0;
-        $currentPayerUserId = 0;
-        $currentPaymentMethodId = 0;
-        foreach ($subscriptions as $subscription) {
-            if ($sort == "category_id" && $subscription['category_id'] != $currentCategory) {
-                ?>
-                    <div class="subscription-list-title">
-                        <?php
-                            if ($subscription['category_id'] == 1) {
-                                echo translate('no_category', $i18n);
-                            } else {
-                                echo $categories[$subscription['category_id']]['name'] .' ( '. $sumCategories[$subscription['category_id']] . '€ )';
-                            }
-                        ?>
-                    </div>
-                <?php
-                $currentCategory = $subscription['category_id'];
-            }
-            if ($sort == "payer_user_id" && $subscription['payer_user_id'] != $currentPayerUserId) {
-                ?>
-                    <div class="subscription-list-title">
-                        <?= $members[$subscription['payer_user_id']]['name'] ?>
-                    </div>
-                <?php
-                $currentPayerUserId = $subscription['payer_user_id'];
-            }
-            if ($sort == "payment_method_id" && $subscription['payment_method_id'] != $currentPaymentMethodId) {
-                ?>
-                    <div class="subscription-list-title">
-                        <?= $subscription['payment_method_name'] ?>
-                    </div>
-                <?php
-                $currentPaymentMethodId = $subscription['payment_method_id'];
-            }
-        ?>
-            <div class="subscription<?= $subscription['inactive'] ? ' inactive' : '' ?>" onClick="toggleOpenSubscription(<?= $subscription['id'] ?>)" data-id="<?= $subscription['id'] ?>" data-name="<?= $subscription['name'] ?>">
-                <div class="subscription-main">
-                    <span class="logo"><img src="<?= $subscription['logo'] ?>"></span>
-                    <span class="name"><?= $subscription['name'] ?></span>
-                    <span class="cycle"><?= $subscription['billing_cycle'] ?></span>
-                    <span class="next"><?= $subscription['next_payment'] ?></span>
-                    <span class="price">
-                    <img src="<?= $subscription['payment_method_icon'] ?>" title="<?= translate('payment_method', $i18n) ?>: <?= $subscription['payment_method_name'] ?>"/>
-                    <?= CurrencyFormatter::format($subscription['price'], $subscription['currency_code']) ?>
-                    </span>
-                    <span class="actions">
-                    <button class="image-button medium" onClick="openEditSubscription(event, <?= $subscription['id'] ?>)" name="edit">
-                        <img src="images/siteicons/<?= $colorTheme ?>/edit.png" title="<?= translate('edit_subscription', $i18n) ?>">
-                    </button>
-                    </span>
-                </div>
-                <div class="subscription-secondary">
-                    <span class="name"><img src="images/siteicons/<?= $colorTheme ?>/subscription.png" alt="<?= translate('subscription', $i18n) ?>" /><?= $subscription['name'] ?></span>
-                    <!--<span class="payer_user" title="<?= translate('paid_by', $i18n) ?>"><img src="images/siteicons/<?= $colorTheme ?>/payment.png" alt="<?= translate('paid_by', $i18n) ?>" /><?= $members[$subscription['payer_user_id']]['name'] ?></span>-->
-                    <span class="category" title="<?= translate('category', $i18n) ?>" ><img src="images/siteicons/<?= $colorTheme ?>/category.png" alt="<?= translate('category', $i18n) ?>" /><?= $categories[$subscription['category_id']]['name'] ?></span>
-                    <?php
-                    if ($subscription['last_date'] != "") {
-                    ?>
-                        <span class="last_date"><?= translate('last_date_str', $i18n) ?> <?= calculateEndDate($subscription['last_date']) ?> <?= translate('dayly', $i18n) ?></span>
-                    <?php
-                    }
-                    ?>
-                    <?php
-                        if ($subscription['url'] != "") {
-                            $url = $subscription['url'];
-                            if (!preg_match('/^https?:\/\//', $url)) {
-                                $url = "https://" . $url;
-                            }
-                            ?>
-                                <span class="url" title="<?= translate('external_url', $i18n) ?>"><a href="<?= $url ?>" target="_blank"><img src="images/siteicons/<?= $colorTheme ?>/web.png" alt="<?= translate('url', $i18n) ?>" /></a></span>
-                            <?php
-                        }
-                    ?>
-                </div>
-                <?php
-                    if ($subscription['notes'] != "") {
-                        ?>
-                            <div class="subscription-notes">
-                                <span class="notes">
-                                    <img src="images/siteicons/<?= $colorTheme ?>/notes.png" alt="<?= translate('notes', $i18n) ?>" />
-                                    <?= $subscription['notes'] ?>
-                                </span>
-                            </div>
-                        <?php
-                    }
-                ?>    
-            </div>
-        <?php
-        }
     }
 
-    $query = "SELECT main_currency FROM user WHERE id = :userId";
-    $stmt = $db->prepare($query);
-    $stmt->bindValue(':userId', $userId, SQLITE3_INTEGER);
-    $result = $stmt->execute();
-    $row = $result->fetchArray(SQLITE3_ASSOC);
-    $mainCurrencyId = $row['main_currency'];
+    $currentCategory = 0;
+    $currentPayerUserId = 0;
+    $currentPaymentMethodId = 0;
+    foreach ($subscriptions as $subscription) {
+        if ($sort == "category_id" && $subscription['category_id'] != $currentCategory) {
+            ?>
+            <div class="subscription-list-title">
+                <?php
+                if ($subscription['category_id'] == 1) {
+                    echo translate('no_category', $i18n);
+                } else {
+                    echo $categories[$subscription['category_id']]['name'];
+                }
+                ?>
+            </div>
+            <?php
+            $currentCategory = $subscription['category_id'];
+        }
+        if ($sort == "payer_user_id" && $subscription['payer_user_id'] != $currentPayerUserId) {
+            ?>
+            <div class="subscription-list-title">
+                <?= $members[$subscription['payer_user_id']]['name'] ?>
+            </div>
+            <?php
+            $currentPayerUserId = $subscription['payer_user_id'];
+        }
+        if ($sort == "payment_method_id" && $subscription['payment_method_id'] != $currentPaymentMethodId) {
+            ?>
+            <div class="subscription-list-title">
+                <?= $subscription['payment_method_name'] ?>
+            </div>
+            <?php
+            $currentPaymentMethodId = $subscription['payment_method_id'];
+        }
+        ?>
+        <div class="subscription<?= $subscription['inactive'] ? ' inactive' : '' ?>"
+            onClick="toggleOpenSubscription(<?= $subscription['id'] ?>)" data-id="<?= $subscription['id'] ?>"
+            data-name="<?= $subscription['name'] ?>">
+            <div class="subscription-main">
+                <span class="logo">
+                    <?php
+                    if ($subscription['logo'] != "") {
+                        ?>
+                        <img src="<?= $subscription['logo'] ?>">
+                        <?php
+                    } else {
+                        include $imagePath . "images/siteicons/svg/logo.php";
+                    }
+                    ?>
+                </span>
+                <span class="name"><?= $subscription['name'] ?></span>
+                <span class="cycle"><?= $subscription['billing_cycle'] ?></span>
+                <span class="next"><?= $subscription['next_payment'] ?></span>
+                <span class="price">
+                    <img src="<?= $subscription['payment_method_icon'] ?>"
+                        title="<?= translate('payment_method', $i18n) ?>: <?= $subscription['payment_method_name'] ?>" />
+                    <?= CurrencyFormatter::format($subscription['price'], $subscription['currency_code']) ?>
+                </span>
+                <button type="button" class="actions-expand" onClick="expandActions(event, <?= $subscription['id'] ?>)">
+                    <i class="fas fa-ellipsis-v"></i>
+                </button>
+                <ul class="actions">
+                    <li class="edit" title="<?= translate('edit_subscription', $i18n) ?>"
+                        onClick="openEditSubscription(event, <?= $subscription['id'] ?>)">
+                        <?php include $imagePath . "images/siteicons/svg/edit.php"; ?>
+                        <?= translate('edit_subscription', $i18n) ?>
+                    </li>
+                    <li class="delete" title="<?= translate('delete', $i18n) ?>"
+                        onClick="deleteSubscription(event, <?= $subscription['id'] ?>)">
+                        <?php include $imagePath . "images/siteicons/svg/delete.php"; ?>
+                        <?= translate('delete', $i18n) ?>
+                    </li>
+                    <li class="clone" title="<?= translate('clone', $i18n) ?>"
+                        onClick="cloneSubscription(event, <?= $subscription['id'] ?>)">
+                        <?php include $imagePath . "images/siteicons/svg/clone.php"; ?>
+                        <?= translate('clone', $i18n) ?>
+                    </li>
+                </ul>
+            </div>
+            <div class="subscription-secondary">
+                <span
+                    class="name"><?php include $imagePath . "images/siteicons/svg/subscription.php"; ?><?= $subscription['name'] ?></span>
+                <span class="payer_user"
+                    title="<?= translate('paid_by', $i18n) ?>"><?php include $imagePath . "images/siteicons/svg/payment.php"; ?><?= $members[$subscription['payer_user_id']]['name'] ?></span>
+                <span class="category"
+                    title="<?= translate('category', $i18n) ?>"><?php include $imagePath . "images/siteicons/svg/category.php"; ?><?= $categories[$subscription['category_id']]['name'] ?></span>
+                <?php
+                if ($subscription['url'] != "") {
+                    $url = $subscription['url'];
+                    if (!preg_match('/^https?:\/\//', $url)) {
+                        $url = "https://" . $url;
+                    }
+                    ?>
+                    <span class="url" title="<?= translate('external_url', $i18n) ?>"><a href="<?= $url ?>"
+                            target="_blank"><?php include $imagePath . "images/siteicons/svg/web.php"; ?></a></span>
+                    <?php
+                }
+                ?>
+            </div>
+            <?php
+            if ($subscription['notes'] != "") {
+                ?>
+                <div class="subscription-notes">
+                    <span class="notes">
+                        <?php include $imagePath . "images/siteicons/svg/notes.php"; ?>
+                        <?= $subscription['notes'] ?>
+                    </span>
+                </div>
+                <?php
+            }
+            ?>
+        </div>
+        <?php
+    }
+}
+
+$query = "SELECT main_currency FROM user WHERE id = :userId";
+$stmt = $db->prepare($query);
+$stmt->bindValue(':userId', $userId, SQLITE3_INTEGER);
+$result = $stmt->execute();
+$row = $result->fetchArray(SQLITE3_ASSOC);
+$mainCurrencyId = $row['main_currency'];
 
 ?>

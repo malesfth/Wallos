@@ -33,4 +33,13 @@ let i18n = {
     unknown_error: "Erreur inconnue, veuillez réessayer.",
     error_saving_notification_data: "Erreur lors de l'enregistrement des données de notification",
     error_sending_notification: "Erreur lors de l'envoi de la notification",
+    delete_account_confirmation: "Êtes-vous sûr de vouloir supprimer votre compte ?",
+    this_will_delete_all_data: "Cela supprimera toutes vos données et ne pourra pas être annulé. Continuer ?",
+    // Calendar
+    price: "Prix",
+    category: "Catégorie",
+    paid_by: "Payé par",
+    payment_method: "Méthode de paiement",
+    notes: "Notes",
+    export: "Exporter",
 };

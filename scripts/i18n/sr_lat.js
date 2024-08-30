@@ -33,4 +33,13 @@ let i18n = {
   unknown_error: "Nepoznata greška, molimo pokušajte ponovo.",
   error_saving_notification_data: "Greška pri čuvanju podataka o obaveštenjima",
   error_sending_notification: "Greška pri slanju obaveštenja",
+  delete_account_confirmation: "Da li ste sigurni da želite da izbrišete svoj nalog?",
+  this_will_delete_all_data: "Ovo će izbrisati sve vaše podatke i ne može se poništiti. Da li nastaviti?",
+  // Calendar
+  price: "Cena",
+  category: "Kategorija",
+  paid_by: "Platio/la",
+  payment_method: "Način plaćanja",
+  notes: "Beleške",
+  export: "Izvezi",
 }

@@ -33,4 +33,13 @@ let i18n = {
   unknown_error: "Nieznany błąd, spróbuj ponownie.",
   error_saving_notification_data: "Błąd zapisywania danych powiadomienia",
   error_sending_notification: "Błąd wysyłania powiadomienia",
+  delete_account_confirmation: "Czy na pewno chcesz usunąć swoje konto?",
+  this_will_delete_all_data: "Spowoduje to usunięcie wszystkich danych i nie będzie można tego cofnąć. Kontynuować?",
+  // Calendar
+  price: "Cena",
+  category: "Kategoria",
+  paid_by: "Zapłacone przez",
+  payment_method: "Metoda płatności",
+  notes: "Notatki",
+  export: "Eksport",
 }
