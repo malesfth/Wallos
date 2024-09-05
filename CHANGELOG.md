@@ -1,5 +1,10 @@
 # Changelog
 
+## [2.23.3](https://github.com/ellite/Wallos/compare/v2.23.1...v2.23.2) (2024-09-04)
+
+* API (/endpoints/api/)
+* Set savings plan and lump sums category for stats
+
 ## [2.23.2](https://github.com/ellite/Wallos/compare/v2.23.1...v2.23.2) (2024-09-04)
 
 

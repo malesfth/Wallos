@@ -94,6 +94,8 @@ $mostExpensiveSubscription['price'] = 0;
 $amountDueThisMonth = 0;
 $totalCostPerMonth = 0;
 $totalSavingsPerMonth = 0;
+$general = 0;
+$savings = 0;
 
 $statsSubtitleParts = [];
 $query = "SELECT name, price, logo, frequency, cycle, currency_id, next_payment, payer_user_id, category_id, payment_method_id, inactive FROM subscriptions";
@@ -169,6 +171,13 @@ if ($result) {
           $mostExpensiveSubscription['name'] = $name;
           $mostExpensiveSubscription['logo'] = $logo;
         }
+
+        if ($categories[$categoryId]['is_general']==1) {
+          $general = $general + $price;
+        }
+        if ($categories[$categoryId]['is_saving']==1) {
+          $savings = $savings + $price;
+        } 
 
         // Calculate ammount due this month
         $nextPaymentDate = DateTime::createFromFormat('Y-m-d', trim($next_payment));
@@ -387,6 +396,14 @@ $numberOfElements = 6;
     <div class="statistic">
       <span><?= CurrencyFormatter::format($amountDueThisMonth, $code) ?></span>
       <div class="title"><?= translate('amount_due', $i18n) ?></div>
+    </div>
+    <div class="statistic">
+        <span><?= CurrencyFormatter::format($savings, $code) ?></span>
+        <div class="title"><?= translate('savings', $i18n) ?></div>
+    </div>
+    <div class="statistic">
+        <span><?= CurrencyFormatter::format($general, $code) ?></span>
+        <div class="title"><?= translate('general', $i18n) ?></div>
     </div>
     <?php
     if (isset($budgetUsed)) {

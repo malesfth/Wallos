@@ -775,6 +775,12 @@ require_once 'includes/header.php';
                                 title="<?= translate('save_category', $i18n) ?>">
                                 <?php include "images/siteicons/svg/save.php"; ?>
                             </button>
+                            <button class="image-button medium<?= ($category['is_saving']==1 ? ' success' : '') ?>" onClick="editCategorySavings(<?= $category['id'] ?>)" name="savingscat">
+                              <img src="images/siteicons/<?= $colorTheme ?>/payment.png" title="<?= translate('save_category_savingsplan', $i18n) ?>">
+                            </button>
+                            <button class="image-button medium<?= ($category['is_general']==1 ? ' success' : '') ?>" onClick="editCategoryGeneral(<?= $category['id'] ?>)" name="generalcat">
+                              <img src="images/siteicons/<?= $colorTheme ?>/category.png" title="<?= translate('save_category_general', $i18n) ?>">
+                            </button>
                             <?php
                             if ($canDelete) {
                                 ?>

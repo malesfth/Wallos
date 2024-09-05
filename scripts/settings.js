@@ -366,6 +366,65 @@ function editCategory(categoryId) {
   }
 }
 
+function editCategorySavings(categoryId) {
+  var saveButton = document.querySelector(`div[data-categoryid="${categoryId}"] button[name="savingscat"]`);
+  var url = `endpoints/categories/category.php?action=editsavings&categoryId=${categoryId}`;
+
+  fetch(url)
+    .then(response => {
+      if (!response.ok) {
+        showErrorMessage(translate('failed_save_category'));
+      }
+      return response.json();
+    })
+    .then(responseData => {
+      if (responseData.success) {
+        saveButton.classList.remove("success");
+        saveButton.classList.remove("error");
+        if (responseData.state==0) {
+          saveButton.classList.add("error");
+        } else {
+          saveButton.classList.add("success");
+        }
+        showSuccessMessage(responseData.message);
+      } else {
+        showErrorMessage(responseData.errorMessage || translate('failed_save_category'));
+      }
+    })
+    .catch(error => {
+      showErrorMessage(translate('failed_save_category'));
+    });
+}
+function editCategoryGeneral(categoryId) {
+  var saveButton = document.querySelector(`div[data-categoryid="${categoryId}"] button[name="generalcat"]`);
+  var url = `endpoints/categories/category.php?action=editgeneral&categoryId=${categoryId}`;
+
+  fetch(url)
+    .then(response => {
+      if (!response.ok) {
+        showErrorMessage(translate('failed_save_category'));
+      }
+      return response.json();
+    })
+    .then(responseData => {
+      if (responseData.success) {
+        saveButton.classList.remove("success");
+        saveButton.classList.remove("error");
+        if (responseData.state==0) {
+          saveButton.classList.add("error");
+        } else {
+          saveButton.classList.add("success");
+        }
+        showSuccessMessage(responseData.message);
+      } else {
+        showErrorMessage(responseData.errorMessage || translate('failed_save_category'));
+      }
+    })
+    .catch(error => {
+      showErrorMessage(translate('failed_save_category'));
+    });
+}
+
 function addCurrencyButton(currencyId) {
   document.getElementById("addCurrency").disabled = true;
   const url = 'endpoints/currency/add.php';
